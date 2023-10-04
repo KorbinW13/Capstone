@@ -16,4 +16,6 @@ public class Damage : ScriptableObject
     public Type damageType;
 
     public int damageValue;
+
+    public int cost;
 }

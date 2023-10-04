@@ -1,3 +1,4 @@
+using OpenCover.Framework.Model;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -18,7 +19,7 @@ public class DisplayBarsNum : MonoBehaviour
     public Slider hpSlider;
     public Slider mpSlider;
 
-    void Start()
+    public void SetHUD(int HP, int MP, int MaxHP, int MaxMP)
     {
         HPandMPText(HP, MP);
         hpSlider.maxValue = MaxHP;
@@ -27,17 +28,9 @@ public class DisplayBarsNum : MonoBehaviour
         mpSlider.value = MP;
     }
 
-    
     void Update()
     {
-        
-    }
-
-    private void FixedUpdate()
-    {
-        HPandMPText(HP, MP);
-        hpSlider.value = HP;
-        mpSlider.value = MP;
+        SetHUD(HP, MP, MaxHP, MaxMP);
     }
 
     void HPandMPText(int HP, int MP)
