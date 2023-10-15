@@ -1,6 +1,9 @@
+using JetBrains.Annotations;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static BattleStateMachine;
 
 
 public enum TurnState
@@ -22,12 +25,19 @@ public class BattleStateMachine : MonoBehaviour
     public Transform enemyBattleStation;
 
     public TurnState turnState;
-    UnitInfo playerInfo;
-    UnitInfo enemyInfo;
+    public UnitInfo playerInfo;
+    public UnitInfo enemyInfo;
 
     public BattleHUD playerHUD;
     //public BattleHUD enemyHUD;
 
+    public enum MenuOptions //for the first menu selection
+    {
+        Attack,
+        Skills,
+        Items,
+        Pass
+    }
 
     void Start()
     {
@@ -56,15 +66,16 @@ public class BattleStateMachine : MonoBehaviour
         ActionPanel.SetActive(true);
     }
 
-    IEnumerator PlayerAttack()
+    IEnumerator PlayerAttack(int damage)
     {
-        //Damage the enemy
-        playerInfo.damage = (int)Mathf.Sqrt(playerInfo.strength);
+        //Damage the with base attack enemy
+        playerInfo.damage = damage;
+
         bool isDead = enemyInfo.TakeDamage(playerInfo.damage);
 
         //They updated enemy Hud here but i wont to make it more diffcult battle
 
-        yield return new WaitForEndOfFrame();
+        yield return new WaitForSeconds(1.0f);
 
         //Check if the enemy is dead
         if (isDead)
@@ -96,17 +107,17 @@ public class BattleStateMachine : MonoBehaviour
         }
     }
 
-    IEnumerator EnemyTurn()
+    public IEnumerator EnemyTurn()
     {
         //Attack name here
 
-        yield return new WaitForEndOfFrame();
+        yield return new WaitForSeconds(1.0f);
         enemyInfo.damage = (int)Mathf.Sqrt(playerInfo.strength);
         bool isDead = playerInfo.TakeDamage(enemyInfo.damage);
 
         playerHUD.SetHUD(playerInfo);
 
-        yield return new WaitForEndOfFrame();
+        yield return new WaitForSeconds(1.0f);
 
         if (isDead)
         {
@@ -122,12 +133,43 @@ public class BattleStateMachine : MonoBehaviour
 
     public void OnAttackButton()
     {
-        if(turnState != TurnState.PlayerTurn)
+        int damage = (int)Mathf.Sqrt(playerInfo.weaponPower / 2) * (int)Mathf.Sqrt(playerInfo.strength);
+        if (turnState != TurnState.PlayerTurn)
         {
             return;
         }
 
-        StartCoroutine(PlayerAttack());
+        StartCoroutine(PlayerAttack(damage));
+    }
+
+    public void OnSkillButton(int SkillPower, Enum DamageType, bool CostMP, int Cost)
+    {
+        //here will be skill damage version
+        switch(CostMP)
+        {
+            case true:
+
+                playerInfo.currMP = playerInfo.currMP - Cost;
+                SkillPower = (int)Mathf.Sqrt(SkillPower) * (int)Mathf.Sqrt(playerInfo.magic);
+
+                break;
+            case false:
+
+                playerInfo.currHP = playerInfo.currHP - Cost;
+                SkillPower = (int)Mathf.Sqrt(SkillPower) * (int)Mathf.Sqrt(playerInfo.strength);
+
+                break;
+        }
+
+
+        SkillPower = (int)Mathf.Sqrt(SkillPower)*(int)Mathf.Sqrt(playerInfo.magic);
+
+        if (turnState != TurnState.PlayerTurn)
+        {
+            return;
+        }
+
+        StartCoroutine(PlayerAttack(SkillPower));
     }
 
     void Update()

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 
@@ -20,13 +21,26 @@ public class UnitInfo : MonoBehaviour
     public int agility; //indicates effectiveness of hit and evasion rates
     public int luck; // possibility of crit hits and eva atks
 
-    public int damage; //= (int)Mathf.Sqrt(strength);
+    public int weaponPower; //equipment if i get to it
+    public int armorDefense; //equipment if i get to it
+    public int damage; //needed placeholder for math
 
-    public bool TakeDamage(int dmg)
+    public bool TakeDamage(int BasePower)
     {
-        currHP -= dmg;
+        currHP -= BasePower/(int)Mathf.Sqrt(endurance*8 + armorDefense);
 
         if (currHP <= 0 ) 
+        {
+            return true;
+        }
+        else { return false; }
+    }
+
+    public bool TakeSkillDamage(int SkillPower)
+    {
+        currHP -= 1; //temp
+
+        if (currHP <= 0)
         {
             return true;
         }

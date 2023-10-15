@@ -8,6 +8,8 @@ public class AtkMenuController : MonoBehaviour
     public int maxIndex;
     InputSystem input;
     [SerializeField] RectTransform rectTransform;
+    [SerializeField] GameObject PrevPanel;
+    [SerializeField] GameObject ParentPanel;
 
     void Awake()
     {
@@ -49,5 +51,14 @@ public class AtkMenuController : MonoBehaviour
                 }
             }
         }
+
+        if (PrevPanel != null & input.UI.Back.WasPressedThisFrame())
+        {
+
+            PrevPanel.SetActive(true);
+            ParentPanel.SetActive(false);
+        }
     }
+
+
 }

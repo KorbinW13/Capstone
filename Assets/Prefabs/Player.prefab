@@ -144,13 +144,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lvl: 1
-  baseHP: 100
-  currHP: 100
-  baseMP: 100
-  currMP: 100
-  strength: 5
+  baseHP: 250
+  currHP: 250
+  baseMP: 150
+  currMP: 150
+  strength: 50
   magic: 5
   endurance: 5
   agility: 5
   luck: 5
+  weaponPower: 15
+  armorDefense: 15
   damage: 0
