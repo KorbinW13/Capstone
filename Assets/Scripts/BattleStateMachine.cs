@@ -17,7 +17,19 @@ public enum TurnState
 
 public class BattleStateMachine : MonoBehaviour
 {
-    public GameObject playerPrefab;
+
+    public Camera MainCamera;
+    public Camera PlayerCamera;
+    public Camera PlayerAtkCamera;
+
+    public RectTransform PlayerHUDPanel;
+    public GameObject PlayerHUDprefab;
+
+    public List<GameObject> PartyMembers = new List<GameObject>();
+    public List<UnitInfo> PassMembers = new List<UnitInfo>();
+    int PartyTurn;
+
+
     public GameObject enemyPrefab;
     [SerializeField] GameObject ActionPanel;
 
@@ -25,10 +37,12 @@ public class BattleStateMachine : MonoBehaviour
     public Transform enemyBattleStation;
 
     public TurnState turnState;
+
     public UnitInfo playerInfo;
     public UnitInfo enemyInfo;
 
     public BattleHUD playerHUD;
+    public BattleHUD[] battleHUD;
     //public BattleHUD enemyHUD;
 
     public enum MenuOptions //for the first menu selection
@@ -39,35 +53,103 @@ public class BattleStateMachine : MonoBehaviour
         Pass
     }
 
+    private void Awake()
+    {
+        battleHUD = new BattleHUD[PartyMembers.Count];
+        PartyTurn = 0;
+    }
+
     void Start()
     {
+        MainCamera.enabled = true;
         turnState = TurnState.Start;
+        Debug.Log(turnState);
         StartCoroutine(SetupBattle());
+        
     }
 
     IEnumerator SetupBattle()
     {
-        GameObject playerGO = Instantiate(playerPrefab, playerBattleStation);
-        playerInfo = playerGO.GetComponent<UnitInfo>();
+        for (int index = 0; index < PartyMembers.Count; index++)
+        {
+            PassMembers[index] = CreatePartyMember(index);
+            battleHUD[index] = CreatePartyHUDs(PassMembers[index]);
+        }
+        //GameObject playerGO = Instantiate(playerPrefab, playerBattleStation);
+        //playerInfo = playerGO.GetComponent<UnitInfo>();
 
         GameObject enemyGo = Instantiate(enemyPrefab, enemyBattleStation);
         enemyInfo = enemyGo.GetComponent<UnitInfo>();
 
-        playerHUD.SetHUD(playerInfo);
+        //playerHUD.SetHUD(playerInfo);
 
         yield return new WaitForEndOfFrame();
 
         turnState = TurnState.PlayerTurn;
-        PlayerTurn();
+        PlayerTurn(); //Starts the player's turn
     }
 
     void PlayerTurn()
     {
-        ActionPanel.SetActive(true);
+        Debug.Log(turnState);
+
+        //some kind of switch case for party memembers here maybe
+        switch (PartyTurn)
+        {
+            case 0:
+                playerInfo = PassMembers[0];
+
+                ActionPanel.SetActive(true); //Activates the player's command window
+                break;
+            case 1:
+                playerInfo = PassMembers[1];
+
+                ActionPanel.SetActive(true); //Activates the player's command window
+                break;
+            case 2:
+                playerInfo = PassMembers[2];
+
+                ActionPanel.SetActive(true); //Activates the player's command window
+                break;
+            case 3:
+                playerInfo = PassMembers[3];
+
+                /*
+
+                foreach (Camera child in PassMembers[3].transform)
+                {
+                    if (child.name == "Back Camera")
+                    {
+                        PlayerCamera = child;
+                    }
+                }
+                MainCamera.enabled = false;
+                PlayerCamera.enabled = true;
+
+                foreach (Camera child in PassMembers[3].transform)
+                {
+                    if (child.name == "Front Camera")
+                    {
+                        PlayerAtkCamera = child;
+                    }
+                }
+                PlayerAtkCamera.enabled = false;
+                */
+
+
+                ActionPanel.SetActive(true); //Activates the player's command window
+                break;
+        }
+
+
+        
+        //ActionPanel.SetActive(true); //Activates the player's command window
     }
 
     IEnumerator PlayerAttack(int damage)
     {
+        Debug.Log(turnState);
+        PartyTurn++;
         //Damage the with base attack enemy
         playerInfo.damage = damage;
 
@@ -87,8 +169,15 @@ public class BattleStateMachine : MonoBehaviour
         else
         {
             //End Turn
-            turnState = TurnState.EnemyTurn;
-            StartCoroutine(EnemyTurn());
+            if (PartyTurn < PassMembers.Count)
+            {
+                PlayerTurn();
+            }
+            else
+            {
+                turnState = TurnState.EnemyTurn;
+                StartCoroutine(EnemyTurn());
+            }
         }
         // Change the state based on what happened
     }
@@ -110,12 +199,20 @@ public class BattleStateMachine : MonoBehaviour
     public IEnumerator EnemyTurn()
     {
         //Attack name here
+        PartyTurn = 0;
+        Debug.Log(turnState);
+
+
+        int Attacked = UnityEngine.Random.Range(0, PassMembers.Count); // randomly selects from the members availble to hit
+        playerInfo = PassMembers[Attacked]; // sets who gets hit
+        Debug.Log("Member: " + Attacked + " getting attacked!");
 
         yield return new WaitForSeconds(1.0f);
         enemyInfo.damage = (int)Mathf.Sqrt(playerInfo.strength);
+        Debug.Log("Enemy's Damage: " + enemyInfo.damage);
         bool isDead = playerInfo.TakeDamage(enemyInfo.damage);
 
-        playerHUD.SetHUD(playerInfo);
+        battleHUD[Attacked].SetHUD(playerInfo);
 
         yield return new WaitForSeconds(1.0f);
 
@@ -131,8 +228,30 @@ public class BattleStateMachine : MonoBehaviour
         }
     }
 
+    //Party Creation happens here
+    UnitInfo CreatePartyMember(int i)
+    {
+        var SpawnIn = Instantiate(PartyMembers[i], playerBattleStation); ;
+        var Member = SpawnIn.GetComponent<UnitInfo>();
+        Member.name = "Member: " + i.ToString();
+        return Member;
+    }
+
+    BattleHUD CreatePartyHUDs(UnitInfo member)
+    {
+        var HUD = Instantiate(PlayerHUDprefab, PlayerHUDPanel);
+        var PlayerHUD = HUD.GetComponent<BattleHUD>();
+        PlayerHUD.name = member.name + "'s HUD";
+        PlayerHUD.SetHUD(member);
+        return PlayerHUD;
+    }
+
+
+    //Basic Attack Button function
     public void OnAttackButton()
     {
+        Debug.Log(turnState);
+        // to artifically change turn
         int damage = (int)Mathf.Sqrt(playerInfo.weaponPower / 2) * (int)Mathf.Sqrt(playerInfo.strength);
         if (turnState != TurnState.PlayerTurn)
         {
@@ -142,38 +261,37 @@ public class BattleStateMachine : MonoBehaviour
         StartCoroutine(PlayerAttack(damage));
     }
 
-    public void OnSkillButton(int SkillPower, Enum DamageType, bool CostMP, int Cost)
+    public void OnSkillButton(ActionSkills Skill)
     {
+        int damage = 0;
+        Debug.Log(turnState);
+
         //here will be skill damage version
-        switch(CostMP)
+        
+        switch(Skill.costType)
         {
-            case true:
+            case ActionSkills.CostType.MP:
 
-                playerInfo.currMP = playerInfo.currMP - Cost;
-                SkillPower = (int)Mathf.Sqrt(SkillPower) * (int)Mathf.Sqrt(playerInfo.magic);
-
+                playerInfo.currMP = playerInfo.currMP - Skill.cost;
+                battleHUD[PartyTurn].SetHUD(playerInfo);
+                damage = (int)Mathf.Sqrt(Skill.damageValue) * (int)Mathf.Sqrt(playerInfo.magic);
+                Debug.Log("Skill damage: " + damage);
                 break;
-            case false:
 
-                playerInfo.currHP = playerInfo.currHP - Cost;
-                SkillPower = (int)Mathf.Sqrt(SkillPower) * (int)Mathf.Sqrt(playerInfo.strength);
+            case ActionSkills.CostType.HP:
 
+                playerInfo.currHP = playerInfo.currHP - Skill.cost;
+                battleHUD[PartyTurn].SetHUD(playerInfo);
+                damage = (int)Mathf.Sqrt(Skill.damageValue) * (int)Mathf.Sqrt(playerInfo.strength);
+                Debug.Log("Skill damage: " + damage);
                 break;
         }
-
-
-        SkillPower = (int)Mathf.Sqrt(SkillPower)*(int)Mathf.Sqrt(playerInfo.magic);
 
         if (turnState != TurnState.PlayerTurn)
         {
             return;
         }
 
-        StartCoroutine(PlayerAttack(SkillPower));
-    }
-
-    void Update()
-    {
-        Debug.Log(turnState);
+        StartCoroutine(PlayerAttack(damage));
     }
 }

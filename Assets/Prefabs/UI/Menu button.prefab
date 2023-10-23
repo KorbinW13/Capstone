@@ -188,12 +188,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b1bbe90095fa454c985b0fb22154fe1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  menuButtonController: {fileID: 0}
-  m_Rect: {fileID: 0}
+  BattleObject: {fileID: 0}
+  BattleSystem: {fileID: 0}
+  m_Rect: {fileID: 8119752281330099297}
   animator: {fileID: 8119752281330099302}
   thisIndex: 0
   menuPanelToOpen: {fileID: 0}
-  ParentPanel: {fileID: 0}
+  SystemAudio: {fileID: 0}
+  UISelected: {fileID: 8300000, guid: 18c8939c52b9d5a48ba328d1821b329c, type: 3}
+  UIConfrimed: {fileID: 8300000, guid: 5125741b22962564d90b086d710401f5, type: 3}
+  menuOptions: 0
 --- !u!1 &8119752281387226739
 GameObject:
   m_ObjectHideFlags: 0

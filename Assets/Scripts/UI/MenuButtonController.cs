@@ -36,9 +36,9 @@ public class MenuButtonController : MonoBehaviour
 
     void MenuScroll()
     {
-        if (input.UI.Scroll.ReadValue<float>() != 0)
+        if (input.UI.Scroll.ReadValue<float>() != 0 || input.UI.ScrollUp.WasPressedThisFrame() || input.UI.ScrollDown.WasPressedThisFrame())
         {
-            if (input.UI.Scroll.ReadValue<float>() < 0)
+            if (input.UI.Scroll.ReadValue<float>() < 0 || input.UI.ScrollDown.WasPressedThisFrame())
             {
                 if (index < maxIndex)
                 {
@@ -48,9 +48,8 @@ public class MenuButtonController : MonoBehaviour
                 {
                     index = 0;
                 }
-
             }
-            else if (input.UI.Scroll.ReadValue<float>() > 0)
+            if (input.UI.Scroll.ReadValue<float>() > 0 || input.UI.ScrollUp.WasPressedThisFrame())
             {
 
                 if (index > 0)

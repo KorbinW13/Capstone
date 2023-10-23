@@ -7,6 +7,7 @@ public class ActionSkills : ScriptableObject
     public string skillName;
     public string skillDescription;
     //maybe animation goes here
+    public AudioClip clip;
 
     public enum Type
     {

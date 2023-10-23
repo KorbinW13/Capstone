@@ -14,8 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skillName: Garu
   skillDescription: Deal light Wind damage to 1 foe.
+  audioSource: {fileID: 0}
+  clip: {fileID: 0}
   damageType: 4
   damageValue: 40
-  costType: 0
+  costType: 1
   cost: 4
   targetType: 0

@@ -129,17 +129,6 @@
                 },
                 {
                     "name": "",
-                    "id": "20a83dee-87a7-47e3-8763-6044b80bff3c",
-                    "path": "<Gamepad>/leftStick/y",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Gamepad",
-                    "action": "Scroll",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "caf95293-ee06-4b91-8865-4b3de04417b6",
                     "path": "<Keyboard>/space",
                     "interactions": "",
@@ -173,6 +162,17 @@
                 },
                 {
                     "name": "",
+                    "id": "1fc8dc44-a6d2-46ce-a989-8c15db76434e",
+                    "path": "<Gamepad>/leftStick/up",
+                    "interactions": "Hold",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "Scroll Up",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "87464f75-aba5-4ea7-8d5d-c539515cc14f",
                     "path": "<Keyboard>/s",
                     "interactions": "",
@@ -187,6 +187,17 @@
                     "id": "bd70334e-dc36-4ba7-ba08-ea2f6aaddede",
                     "path": "<Gamepad>/dpad/down",
                     "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "Scroll Down",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "df7a0b36-ea0f-4be0-bddb-103bff3b5e50",
+                    "path": "<Gamepad>/leftStick/down",
+                    "interactions": "Hold",
                     "processors": "",
                     "groups": "Gamepad",
                     "action": "Scroll Down",
