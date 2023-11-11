@@ -1,17 +1,19 @@
+using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using UnityEngine.Windows;
 using static BattleStateMachine;
-using static PlayerStateMachine;
 
 public class MenuButton : MonoBehaviour
 {
     MenuButtonController menuButtonController;
     GameObject BattleObject;
     BattleStateMachine BattleSystem;
+    public EnemySelection enemySelection;
     public RectTransform m_Rect;
     public Animator animator;
     public int thisIndex;
@@ -69,7 +71,7 @@ public class MenuButton : MonoBehaviour
 
     void ButtonFunction()
     {
-        if (RectTransformUtility.RectangleContainsScreenPoint(m_Rect, Input.mousePosition))
+        if (RectTransformUtility.RectangleContainsScreenPoint(m_Rect, input.UI.MousePosition.ReadValue<Vector2>()))
         {
             menuButtonController.index = thisIndex;
         }
@@ -98,41 +100,42 @@ public class MenuButton : MonoBehaviour
                 switch (menuOptions)
                 {
                     case MenuOptions.Attack:
-                        BattleSystem.OnAttackButton();
+                        input.Disable();
+                        menuButtonController.input.Disable();
+
+                        enemySelection.PrevPanel = ParentPanel;
+                        enemySelection.gameObject.SetActive(true);
+
+                        Invoke("DisablePanel", 0.5f);
+
                         break;
                     case MenuOptions.Skills:
                         if (menuPanelToOpen != null)
                         {
-                            Invoke("DisablePanel", 0.01f);
-                            menuPanelToOpen.SetActive(true);
+                            menuButtonController.input.Disable();
+                            input.Disable();
+                            Invoke("DisablePanel", 0.1f);
                         }
                         else
                         {
-                            TurnPass();
+                            return;
                         }
                         break;
                     case MenuOptions.Items:
                         if (menuPanelToOpen != null)
                         {
-                            Invoke("DisablePanel", 0.01f);
-                            menuPanelToOpen.SetActive(true);
+                            menuButtonController.input.Disable();
+                            input.Disable();
+                            Invoke("DisablePanel", 0.1f);
                         }
                         else
                         {
-                            TurnPass();
+                            return;
                         }
                         break;
                     case MenuOptions.Pass:
-                        /*if statement here for when party is added
-                        if (true)
-                        {
-                            //next party member
-                        }
-                        else
-                        {
-                            TurnPass();
-                        }*/
-                        TurnPass();
+                        menuButtonController.input.Disable();
+                        BattleSystem.TurnPass();
                         break;
                 }
 
@@ -163,12 +166,9 @@ public class MenuButton : MonoBehaviour
     {
         input.Disable();
         ParentPanel.SetActive(false);
-    }
-
-    void TurnPass()
-    {
-        Invoke("DisablePanel", 0.01f);
-        BattleSystem.turnState = TurnState.EnemyTurn;
-        BattleSystem.StartCoroutine(BattleSystem.EnemyTurn());
+        if (menuPanelToOpen != null)
+        {
+            menuPanelToOpen.SetActive(true);
+        }
     }
 }

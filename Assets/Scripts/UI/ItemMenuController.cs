@@ -4,13 +4,22 @@ using UnityEngine;
 
 public class ItemMenuController : MonoBehaviour
 {
+    BattleStateMachine BattleSystem;
     public int index;
     public int maxIndex;
     InputSystem input;
     [SerializeField] RectTransform rectTransform;
 
+    [SerializeField] GameObject PrevPanel;
+    [SerializeField] GameObject ParentPanel;
+
+    public AudioSource SystemAudio;
+    public AudioClip UIBack;
+
     void Awake()
     {
+        BattleSystem = GameObject.Find("Battle System").GetComponent<BattleStateMachine>();
+
         input = new InputSystem();
         input.Enable();
     }
@@ -21,6 +30,18 @@ public class ItemMenuController : MonoBehaviour
     }
 
     void Update()
+    {
+        MouseScroll();
+
+        if (PrevPanel != null & input.UI.Back.WasPressedThisFrame())
+        {
+            SystemAudio.PlayOneShot(UIBack);
+            PrevPanel.SetActive(true);
+            ParentPanel.SetActive(false);
+        }
+    }
+
+    void MouseScroll()
     {
         if (input.UI.Scroll.ReadValue<float>() != 0)
         {

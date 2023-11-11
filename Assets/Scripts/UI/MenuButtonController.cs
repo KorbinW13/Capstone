@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using UnityEngine.Windows;
 
@@ -8,10 +9,12 @@ public class MenuButtonController : MonoBehaviour
 {
     public int index;
     public int maxIndex;
-    InputSystem input;
+    public InputSystem input;
+    public Text PlayerName;
+
     [SerializeField] RectTransform rectTransform;
 
-    //GameObject BattleSystem = GameObject.Find("Battle System");
+    public BattleStateMachine BattleSystem;
 
     void Awake()
     {
@@ -21,6 +24,7 @@ public class MenuButtonController : MonoBehaviour
 
     void OnEnable()
     {
+        PlayerName.text = BattleSystem.playerInfo.name;
         input.Enable();
     }
 

@@ -7,10 +7,11 @@ using UnityEngine.UI;
 
 public class AtkMenuController : MonoBehaviour
 {
-    BattleStateMachine BattleSystem;
+    public BattleStateMachine BattleSystem;
+    public EnemySelection enemySelection;
     public int index;
     public int maxIndex;
-    InputSystem input;
+    public InputSystem input;
     [SerializeField] RectTransform rectTransform;
     [SerializeField] GameObject PrevPanel;
     [SerializeField] GameObject ParentPanel;
@@ -25,8 +26,8 @@ public class AtkMenuController : MonoBehaviour
 
     void Awake()
     {
-        BattleSystem = GameObject.Find("Battle System").GetComponent<BattleStateMachine>();
-        SkillList = new List<ActionSkills>(BattleSystem.playerInfo.SkillList);
+        //BattleSystem = GameObject.Find("Battle System").GetComponent<BattleStateMachine>();
+        
         input = new InputSystem();
         input.Enable();
     }
@@ -38,7 +39,8 @@ public class AtkMenuController : MonoBehaviour
 
     private void OnEnable()
     {
-        
+        input.Enable();
+        SkillList = new List<ActionSkills>(BattleSystem.playerInfo.SkillList);
         Debug.Log("SkillList Size: " + SkillList.Count);
 
         for (int index = 0; index < SkillList.Count; index++)
@@ -112,6 +114,7 @@ public class AtkMenuController : MonoBehaviour
     {
         var newSkill = Instantiate(button, rectTransform);
         var Skill = newSkill.GetComponent<AtkMenuButton>();
+        Skill.enemySelection = enemySelection;
         Skill.thisIndex = index;
         Skill.Skill = SkillList[index];
         

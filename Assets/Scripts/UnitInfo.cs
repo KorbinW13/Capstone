@@ -26,11 +26,55 @@ public class UnitInfo : MonoBehaviour
     public int damage; //needed placeholder for math
 
     //Accuracy math time from different games
-    // Dexterity + (Agility/2) + (Luck/4) + Hit Rate of current Weapon
-    
-    //Evasion Rate from different games
-    // Agility + (Dexterity/2) + (Luck/4) + Evade of all equipment
+    // (Agility/2) + (Luck/4) + Hit Rate of current Weapon
 
+    //Evasion from different games
+    // Agility + (Luck/4) + Evade of all equipment
+
+    // hit or miss would probably be playerAccuracy/EnemyEvasionRate %
+
+
+
+
+    [System.Flags]
+    public enum TypeResist
+    {
+        None=0,
+        Physical=1,
+        Fire=2,
+        Ice=4,
+        Thunder=8,
+        Wind=16,
+        Dark=32,
+        Light=64
+    }
+    public TypeResist typeResist;
+
+    public enum TypeNull
+    {
+        None = 0,
+        Physical = 1,
+        Fire = 2,
+        Ice = 4,
+        Thunder = 8,
+        Wind = 16,
+        Dark = 32,
+        Light = 64
+    }
+    public TypeNull typeNull;
+
+    public enum TypeDrain
+    {
+        None = 0,
+        Physical = 1,
+        Fire = 2,
+        Ice = 4,
+        Thunder = 8,
+        Wind = 16,
+        Dark = 32,
+        Light = 64
+    }
+    public TypeDrain typeDrain;
 
     public List<ActionSkills> SkillList = new List<ActionSkills>();
 

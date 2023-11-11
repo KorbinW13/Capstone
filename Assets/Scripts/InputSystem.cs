@@ -80,6 +80,33 @@ public partial class @InputSystem : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""MousePosition"",
+                    ""type"": ""Value"",
+                    ""id"": ""0da2515c-e545-4cb3-9e8a-e1b81c2cc720"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Scroll Left"",
+                    ""type"": ""Button"",
+                    ""id"": ""9371b05b-e53c-4519-9578-cdf08d4739ee"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Scroll Right"",
+                    ""type"": ""Button"",
+                    ""id"": ""d5f85f0a-abba-47c4-a57f-083c07e734be"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -225,6 +252,39 @@ public partial class @InputSystem : IInputActionCollection2, IDisposable
                     ""action"": ""Scroll Down"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""188825b9-16b2-47a7-b73a-67adba6174cf"",
+                    ""path"": ""<Mouse>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard & Mouse"",
+                    ""action"": ""MousePosition"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8313d18b-ac21-420b-b3c6-0c6e782a9c89"",
+                    ""path"": ""<Gamepad>/leftStick/left"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""Scroll Left"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""120b58e0-c8fc-4800-99a0-6b08e51ed965"",
+                    ""path"": ""<Gamepad>/leftStick/right"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""Scroll Right"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -267,6 +327,9 @@ public partial class @InputSystem : IInputActionCollection2, IDisposable
         m_UI_AltPrimaryAction = m_UI.FindAction("Alt Primary Action", throwIfNotFound: true);
         m_UI_ScrollUp = m_UI.FindAction("Scroll Up", throwIfNotFound: true);
         m_UI_ScrollDown = m_UI.FindAction("Scroll Down", throwIfNotFound: true);
+        m_UI_MousePosition = m_UI.FindAction("MousePosition", throwIfNotFound: true);
+        m_UI_ScrollLeft = m_UI.FindAction("Scroll Left", throwIfNotFound: true);
+        m_UI_ScrollRight = m_UI.FindAction("Scroll Right", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -332,6 +395,9 @@ public partial class @InputSystem : IInputActionCollection2, IDisposable
     private readonly InputAction m_UI_AltPrimaryAction;
     private readonly InputAction m_UI_ScrollUp;
     private readonly InputAction m_UI_ScrollDown;
+    private readonly InputAction m_UI_MousePosition;
+    private readonly InputAction m_UI_ScrollLeft;
+    private readonly InputAction m_UI_ScrollRight;
     public struct UIActions
     {
         private @InputSystem m_Wrapper;
@@ -342,6 +408,9 @@ public partial class @InputSystem : IInputActionCollection2, IDisposable
         public InputAction @AltPrimaryAction => m_Wrapper.m_UI_AltPrimaryAction;
         public InputAction @ScrollUp => m_Wrapper.m_UI_ScrollUp;
         public InputAction @ScrollDown => m_Wrapper.m_UI_ScrollDown;
+        public InputAction @MousePosition => m_Wrapper.m_UI_MousePosition;
+        public InputAction @ScrollLeft => m_Wrapper.m_UI_ScrollLeft;
+        public InputAction @ScrollRight => m_Wrapper.m_UI_ScrollRight;
         public InputActionMap Get() { return m_Wrapper.m_UI; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -369,6 +438,15 @@ public partial class @InputSystem : IInputActionCollection2, IDisposable
                 @ScrollDown.started -= m_Wrapper.m_UIActionsCallbackInterface.OnScrollDown;
                 @ScrollDown.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnScrollDown;
                 @ScrollDown.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnScrollDown;
+                @MousePosition.started -= m_Wrapper.m_UIActionsCallbackInterface.OnMousePosition;
+                @MousePosition.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnMousePosition;
+                @MousePosition.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnMousePosition;
+                @ScrollLeft.started -= m_Wrapper.m_UIActionsCallbackInterface.OnScrollLeft;
+                @ScrollLeft.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnScrollLeft;
+                @ScrollLeft.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnScrollLeft;
+                @ScrollRight.started -= m_Wrapper.m_UIActionsCallbackInterface.OnScrollRight;
+                @ScrollRight.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnScrollRight;
+                @ScrollRight.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnScrollRight;
             }
             m_Wrapper.m_UIActionsCallbackInterface = instance;
             if (instance != null)
@@ -391,6 +469,15 @@ public partial class @InputSystem : IInputActionCollection2, IDisposable
                 @ScrollDown.started += instance.OnScrollDown;
                 @ScrollDown.performed += instance.OnScrollDown;
                 @ScrollDown.canceled += instance.OnScrollDown;
+                @MousePosition.started += instance.OnMousePosition;
+                @MousePosition.performed += instance.OnMousePosition;
+                @MousePosition.canceled += instance.OnMousePosition;
+                @ScrollLeft.started += instance.OnScrollLeft;
+                @ScrollLeft.performed += instance.OnScrollLeft;
+                @ScrollLeft.canceled += instance.OnScrollLeft;
+                @ScrollRight.started += instance.OnScrollRight;
+                @ScrollRight.performed += instance.OnScrollRight;
+                @ScrollRight.canceled += instance.OnScrollRight;
             }
         }
     }
@@ -421,5 +508,8 @@ public partial class @InputSystem : IInputActionCollection2, IDisposable
         void OnAltPrimaryAction(InputAction.CallbackContext context);
         void OnScrollUp(InputAction.CallbackContext context);
         void OnScrollDown(InputAction.CallbackContext context);
+        void OnMousePosition(InputAction.CallbackContext context);
+        void OnScrollLeft(InputAction.CallbackContext context);
+        void OnScrollRight(InputAction.CallbackContext context);
     }
 }

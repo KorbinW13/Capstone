@@ -10,6 +10,7 @@ public class AtkMenuButton : MonoBehaviour
     public AtkMenuController menuController;
     GameObject BattleObject;
     BattleStateMachine BattleSystem;
+    public EnemySelection enemySelection;
     GameObject MainPanel; //for later
     public ActionSkills Skill; //scriptable object prefab
     public RectTransform m_Rect;
@@ -38,6 +39,7 @@ public class AtkMenuButton : MonoBehaviour
         menuController = transform.parent.gameObject.GetComponent<AtkMenuController>();
         BattleObject = GameObject.Find("Battle System");
         BattleSystem = BattleObject.GetComponent<BattleStateMachine>();
+        
 
 
         SystemAudio = BattleObject.GetComponent<AudioSource>();
@@ -68,7 +70,7 @@ public class AtkMenuButton : MonoBehaviour
 
     public void ButtonAction()
     {
-        if (RectTransformUtility.RectangleContainsScreenPoint(m_Rect, Input.mousePosition))
+        if (RectTransformUtility.RectangleContainsScreenPoint(m_Rect, input.UI.MousePosition.ReadValue<Vector2>()))
         {
             menuController.index = thisIndex;
         }
@@ -77,7 +79,7 @@ public class AtkMenuButton : MonoBehaviour
         {
             animator.SetBool("Selected", true);
 
-            if (!PlayedSelected & !SystemAudio.isPlaying)
+            if (!PlayedSelected && !SystemAudio.isPlaying)
             {
                 PlayedSelected = true;
                 SystemAudio.PlayOneShot(UISelected);
@@ -90,45 +92,24 @@ public class AtkMenuButton : MonoBehaviour
 
                 //select enemy with selected atk here
 
-                if (Skill.costType == CostType.HP)
+                
+                if(BattleSystem.SkillCostCheck(BattleSystem.playerInfo, Skill) == true)
                 {
-                    if (BattleSystem.playerInfo.currHP - Skill.cost != 0)
+                    input.Disable();
+                    menuController.input.Disable();
+                    if (!PlayedConfirmed && !SystemAudio.isPlaying)
                     {
-                        if (!PlayedConfirmed && !SystemAudio.isPlaying)
-                        {
-                            PlayedConfirmed = true;
-                            SystemAudio.PlayOneShot(UIConfrimed);
-                        }
-                        Invoke("DisablePanel", 0.01f);
-                        BattleSystem.OnSkillButton(Skill);
+                        PlayedConfirmed = true;
+                        SystemAudio.PlayOneShot(UIConfrimed);
                     }
-                    else
-                    {
-                        
-                        animator.SetBool("Pressed", false);
-                    }
+
+                    PassToSelection();
+                    Invoke("DisablePanel", 0.01f);
                 }
-                else if (Skill.costType == CostType.MP)
+                else
                 {
-                    if (BattleSystem.playerInfo.currMP - Skill.cost != 0)
-                    {
-                        if (!PlayedConfirmed && !SystemAudio.isPlaying)
-                        {
-                            PlayedConfirmed = true;
-                            SystemAudio.PlayOneShot(UIConfrimed);
-                        }
-                        Invoke("DisablePanel", 0.01f);
-                        BattleSystem.OnSkillButton(Skill);
-                    }
-                    else
-                    {
-                        //no action made
-                        animator.SetBool("Pressed", false);
-                    }
+                    animator.SetBool("Pressed", false);
                 }
-                //BattleSystem.OnSkillButton(Skill.damageValue, Skill.damageType, Skill.costType, Skill.cost); pass skill data to BattleStateMachine
-
-
             }
             else if (animator.GetBool("Pressed"))
             {
@@ -143,16 +124,6 @@ public class AtkMenuButton : MonoBehaviour
             PlayedSelected = false;
             
         }
-
-
-        /* Will probably need later when enemy selection is a thing
-        if (input.UI.Back.WasPressedThisFrame())
-        {
-            SystemAudio.PlayOneShot(UIBack);
-            //Invoke("DisablePanel", 1f);
-            //MainPanel.SetActive(true);//Take us pack to Main Panel
-        }
-        */
     }
 
     public void GetSkillObj()
@@ -181,5 +152,13 @@ public class AtkMenuButton : MonoBehaviour
     {
         input.Disable();
         ParentPanel.SetActive(false);
+    }
+
+    void PassToSelection()
+    {
+        enemySelection.PrevPanel = ParentPanel;
+        enemySelection.Skill = Skill;
+        enemySelection.isSkill = true;
+        enemySelection.gameObject.SetActive(true);
     }
 }
