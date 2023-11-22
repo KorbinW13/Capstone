@@ -1,12 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 
 public class UnitInfo : MonoBehaviour
 {
-    //public string name;
+    public string UnitName;
+    public Animator animator;
     public int lvl; // entity's level
 
     public float baseHP; //max HP
@@ -33,57 +33,37 @@ public class UnitInfo : MonoBehaviour
 
     // hit or miss would probably be playerAccuracy/EnemyEvasionRate %
 
+    public Type typeWeak;
 
+    public Type typeResist;
 
+    public Type typeNull;
 
-    [System.Flags]
-    public enum TypeResist
-    {
-        None=0,
-        Physical=1,
-        Fire=2,
-        Ice=4,
-        Thunder=8,
-        Wind=16,
-        Dark=32,
-        Light=64
-    }
-    public TypeResist typeResist;
-
-    public enum TypeNull
-    {
-        None = 0,
-        Physical = 1,
-        Fire = 2,
-        Ice = 4,
-        Thunder = 8,
-        Wind = 16,
-        Dark = 32,
-        Light = 64
-    }
-    public TypeNull typeNull;
-
-    public enum TypeDrain
-    {
-        None = 0,
-        Physical = 1,
-        Fire = 2,
-        Ice = 4,
-        Thunder = 8,
-        Wind = 16,
-        Dark = 32,
-        Light = 64
-    }
-    public TypeDrain typeDrain;
+    public Type typeDrain;
 
     public List<ActionSkills> SkillList = new List<ActionSkills>();
 
-    public bool TakeDamage(int BasePower)
+    public bool TakeDamage(int BasePower, TypeReaction reaction)
     {
-        currHP -= BasePower/(int)Mathf.Sqrt(endurance*8 + armorDefense);
+        BasePower = BasePower / (int)Mathf.Sqrt(endurance * 8 + armorDefense);
+        if (reaction == TypeReaction.Drain)
+        {
+            currHP += BasePower;
+            currHP = Mathf.Clamp(currHP, 0, baseHP);
+        }
+        else if (reaction == TypeReaction.Null)
+        {
+            return false;
+        }
+        else
+        {
+            currHP -= BasePower;
+            currHP = Mathf.Clamp(currHP, 0, baseHP);
+        }
 
         if (currHP <= 0 ) 
         {
+            animator.SetBool("isDead", true);
             return true;
         }
         else { return false; }

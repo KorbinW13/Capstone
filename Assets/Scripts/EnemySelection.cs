@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Windows;
 
 public class EnemySelection : MonoBehaviour
 {
@@ -21,9 +20,19 @@ public class EnemySelection : MonoBehaviour
     public bool isSkill = false;
     public ActionSkills Skill;
 
+    //UI Sounds
+    public AudioSource SystemAudio;
+    public AudioClip Confirmed;
+    public AudioClip Back;
+    public AudioClip Denied;
+    bool PlayedConfirmed;
+    bool PlayedBack;
+    bool PlayedDenied;
+
     private void Start()
     {
         thisPanel = this.gameObject;
+        SystemAudio = BattleSystem.GetComponent<AudioSource>();
     }
 
     void Awake()
@@ -57,6 +66,10 @@ public class EnemySelection : MonoBehaviour
                 child.GetComponent<EnemySelected>().enabled = false;
             }
         }
+
+        PlayedConfirmed = false;
+        PlayedBack = false;
+        PlayedDenied = false;
     }
 
     void Update()
@@ -100,6 +113,12 @@ public class EnemySelection : MonoBehaviour
     {
         if (input.UI.Back.WasPressedThisFrame())
         {
+            if (!PlayedBack)
+            {
+                PlayedBack = true;
+                SystemAudio.PlayOneShot(Back);
+            }
+
             PrevPanel.SetActive(true);
             thisPanel.SetActive(false);
         }
@@ -110,24 +129,38 @@ public class EnemySelection : MonoBehaviour
         if (input.UI.PrimaryAction.WasPressedThisFrame())
         {
             EnemySelected = selectable_targets[index];
-            BattleSystem.enemyInfo = EnemySelected;
             if (EnemySelected.currHP != 0)
             {
-                input.Disable();
-                if (isSkill)
+                if (!PlayedConfirmed)
                 {
-                    isSkill = false;
-                    Debug.Log(Skill.name + " attacked at " + EnemySelected.name);
-                    BattleSystem.OnSkillButton(Skill);
-                    thisPanel.SetActive(false);
-                }
-                else
-                {
-                    BattleSystem.OnAttackButton();
-                    thisPanel.SetActive(false);
+                    PlayedConfirmed = true;
+                    SystemAudio.PlayOneShot(Confirmed);
+
+                    BattleSystem.enemyInfo = EnemySelected;
+                    input.Disable();
+                    if (isSkill)
+                    {
+                        isSkill = false;
+                        Debug.Log(Skill.name + " attacked at " + EnemySelected.name);
+                        BattleSystem.OnSkillButton(Skill);
+                        thisPanel.SetActive(false);
+                    }
+                    else
+                    {
+                        BattleSystem.OnAttackButton();
+                        thisPanel.SetActive(false);
+                    }
                 }
             }
-            else { return; }
+            else 
+            {
+                if (!PlayedDenied)
+                {
+                    PlayedDenied = true;
+                    SystemAudio.PlayOneShot(Denied);
+                }
+                return; 
+            }
         }
     }
 }

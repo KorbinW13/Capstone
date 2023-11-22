@@ -1,11 +1,8 @@
-using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using UnityEngine.Windows;
 using static BattleStateMachine;
 
 public class MenuButton : MonoBehaviour
@@ -80,7 +77,7 @@ public class MenuButton : MonoBehaviour
         {
             animator.SetBool("Selected", true);
 
-            if (!PlayedSelected && !SystemAudio.isPlaying)
+            if (!PlayedSelected)
             {
                 PlayedSelected = true;
                 SystemAudio.PlayOneShot(UISelected);
@@ -91,52 +88,51 @@ public class MenuButton : MonoBehaviour
             {
                 animator.SetBool("Pressed", true);
 
-                if (!PlayedConfirmed && !SystemAudio.isPlaying)
+                if (!PlayedConfirmed)
                 {
                     PlayedConfirmed = true;
                     SystemAudio.PlayOneShot(UIConfrimed);
-                }
-
-                switch (menuOptions)
-                {
-                    case MenuOptions.Attack:
-                        input.Disable();
-                        menuButtonController.input.Disable();
-
-                        enemySelection.PrevPanel = ParentPanel;
-                        enemySelection.gameObject.SetActive(true);
-
-                        Invoke("DisablePanel", 0.5f);
-
-                        break;
-                    case MenuOptions.Skills:
-                        if (menuPanelToOpen != null)
-                        {
-                            menuButtonController.input.Disable();
+                    switch (menuOptions)
+                    {
+                        case MenuOptions.Attack:
                             input.Disable();
-                            Invoke("DisablePanel", 0.1f);
-                        }
-                        else
-                        {
-                            return;
-                        }
-                        break;
-                    case MenuOptions.Items:
-                        if (menuPanelToOpen != null)
-                        {
                             menuButtonController.input.Disable();
-                            input.Disable();
+
+                            enemySelection.PrevPanel = ParentPanel;
+                            enemySelection.gameObject.SetActive(true);
+
                             Invoke("DisablePanel", 0.1f);
-                        }
-                        else
-                        {
-                            return;
-                        }
-                        break;
-                    case MenuOptions.Pass:
-                        menuButtonController.input.Disable();
-                        BattleSystem.TurnPass();
-                        break;
+
+                            break;
+                        case MenuOptions.Skills:
+                            if (menuPanelToOpen != null)
+                            {
+                                menuButtonController.input.Disable();
+                                input.Disable();
+                                Invoke("DisablePanel", 0.1f);
+                            }
+                            else
+                            {
+                                return;
+                            }
+                            break;
+                        case MenuOptions.Items:
+                            if (menuPanelToOpen != null)
+                            {
+                                menuButtonController.input.Disable();
+                                input.Disable();
+                                Invoke("DisablePanel", 0.1f);
+                            }
+                            else
+                            {
+                                return;
+                            }
+                            break;
+                        case MenuOptions.Pass:
+                            menuButtonController.input.Disable();
+                            BattleSystem.TurnPass();
+                            break;
+                    }
                 }
 
             }

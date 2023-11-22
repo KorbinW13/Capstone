@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using static ActionSkills;
-using System;
 
 public class AtkMenuButton : MonoBehaviour
 {
@@ -15,6 +14,7 @@ public class AtkMenuButton : MonoBehaviour
     public ActionSkills Skill; //scriptable object prefab
     public RectTransform m_Rect;
     public TMP_Text SkillName; //textbox object
+    public TMP_Text SkillCost;
     public Animator animator;
     public int thisIndex;
     InputSystem input;
@@ -59,6 +59,33 @@ public class AtkMenuButton : MonoBehaviour
     {
         m_Rect.SetSiblingIndex(thisIndex);
         GetSkillObj();
+
+        if (Skill != null) 
+        {
+            if (Skill.costType == CostType.MP)
+            {
+                SkillCost.SetText(Skill.cost.ToString() + " SP");
+            }
+            else
+            {
+                int cost;
+                cost = (int)(BattleSystem.playerInfo.currHP - Mathf.RoundToInt((BattleSystem.playerInfo.baseHP * Skill.cost) / 100));
+                SkillCost.SetText(cost.ToString() + " HP");
+            }
+
+            if (BattleSystem.SkillCostCheck(BattleSystem.playerInfo, Skill) != true)
+            {
+                SkillName.color = Color.gray;
+                SkillCost.color = Color.gray;
+                menuController.DescriptionBox.color = Color.gray;
+            }
+            else
+            {
+                SkillName.color = Color.white;
+                SkillCost.color = Color.white;
+                menuController.DescriptionBox.color = Color.white;
+            }
+        }
     }
 
 
@@ -79,11 +106,13 @@ public class AtkMenuButton : MonoBehaviour
         {
             animator.SetBool("Selected", true);
 
-            if (!PlayedSelected && !SystemAudio.isPlaying)
+            if (!PlayedSelected)
             {
                 PlayedSelected = true;
                 SystemAudio.PlayOneShot(UISelected);
             }
+
+            menuController.DescriptionBox.SetText(Skill.skillDescription);
 
             if (input.UI.PrimaryAction.WasPressedThisFrame())
             {
@@ -97,7 +126,7 @@ public class AtkMenuButton : MonoBehaviour
                 {
                     input.Disable();
                     menuController.input.Disable();
-                    if (!PlayedConfirmed && !SystemAudio.isPlaying)
+                    if (!PlayedConfirmed)
                     {
                         PlayedConfirmed = true;
                         SystemAudio.PlayOneShot(UIConfrimed);
@@ -108,6 +137,7 @@ public class AtkMenuButton : MonoBehaviour
                 }
                 else
                 {
+                    SystemAudio.PlayOneShot(UIBack);
                     animator.SetBool("Pressed", false);
                 }
             }
@@ -115,14 +145,12 @@ public class AtkMenuButton : MonoBehaviour
             {
                 animator.SetBool("Pressed", false);
                 PlayedConfirmed = false;
-                
             }
         }
         else
         {
             animator.SetBool("Selected", false);
             PlayedSelected = false;
-            
         }
     }
 

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class AtkMenuController : MonoBehaviour
 {
@@ -16,6 +17,8 @@ public class AtkMenuController : MonoBehaviour
     [SerializeField] GameObject PrevPanel;
     [SerializeField] GameObject ParentPanel;
     public GameObject button;
+    public TMP_Text DescriptionBox;
+
     //return to main panel
     public AudioSource SystemAudio;
     public AudioClip UIBack;

@@ -25,18 +25,18 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8119752279517198367}
-  m_LocalRotation: {x: 0, y: 0, z: 0.03489949, w: 0.99939084}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.5, y: 2.5, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8119752281330099297}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 4}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 87.7, y: 14}
-  m_SizeDelta: {x: 450, y: 50}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 400, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8119752279517198364
 CanvasRenderer:
@@ -66,7 +66,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 1480823450, guid: 5baab45d4956e8a4f911da05f3e37f04, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -188,13 +188,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b1bbe90095fa454c985b0fb22154fe1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enemySelection: {fileID: 0}
   m_Rect: {fileID: 8119752281330099297}
   animator: {fileID: 8119752281330099302}
   thisIndex: 0
   menuPanelToOpen: {fileID: 0}
   SystemAudio: {fileID: 0}
-  UISelected: {fileID: 8300000, guid: 18c8939c52b9d5a48ba328d1821b329c, type: 3}
-  UIConfrimed: {fileID: 8300000, guid: 5125741b22962564d90b086d710401f5, type: 3}
+  UISelected: {fileID: 8300000, guid: be95dd50e28807548a41e79b1aea5f52, type: 3}
+  UIConfrimed: {fileID: 8300000, guid: 736b947ca0a68a94ab34f52d170c8c32, type: 3}
   menuOptions: 0
 --- !u!1 &8119752281387226739
 GameObject:

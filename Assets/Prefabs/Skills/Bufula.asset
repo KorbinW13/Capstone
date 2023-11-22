@@ -15,7 +15,7 @@ MonoBehaviour:
   skillName: Bufula
   skillDescription: Deal medium Ice damage to 1 foe.
   clip: {fileID: 0}
-  damageType: 2
+  damageType: 4
   damageValue: 100
   costType: 1
   cost: 8

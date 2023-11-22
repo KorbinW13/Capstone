@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skillName: Eiha
   skillDescription: Deal light Dark damage to 1 foe.
-  damageType: 5
+  clip: {fileID: 0}
+  damageType: 32
   damageValue: 50
   costType: 1
   cost: 4

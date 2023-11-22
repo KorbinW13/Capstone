@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skillName: Agi
   skillDescription: Deal light Fire damage to 1 foe.
-  damageType: 1
+  clip: {fileID: 0}
+  damageType: 2
   damageValue: 40
   costType: 1
   cost: 4

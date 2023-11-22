@@ -1,11 +1,7 @@
-using JetBrains.Annotations;
-using System;
+using AutoLayout3D;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using static BattleStateMachine;
-
 
 public enum TurnState
 {
@@ -16,12 +12,21 @@ public enum TurnState
     Lost
 }
 
+public enum TypeReaction
+{
+    Normal,
+    Weak,
+    Resist,
+    Null,
+    Drain
+}
+
 public class BattleStateMachine : MonoBehaviour
 {
 
     public Camera MainCamera;
-    public Camera PlayerCamera;
-    public Camera PlayerAtkCamera;
+    public Camera BackCamera;
+    public Camera FrontCamera;
 
     public RectTransform PlayerHUDPanel;
     public GameObject PlayerHUDprefab;
@@ -51,6 +56,13 @@ public class BattleStateMachine : MonoBehaviour
     public BattleHUD[] battleHUD;
     public EnemyHPSlider enemyHUD;
 
+    DamageDisplay DamageDisplay;
+
+
+    public EventDisplay eventDisplay;
+    public GameObject BattleResultsScreen;
+    public ActionSkills BasicAttack;
+
     public enum MenuOptions //for the first menu selection
     {
         Attack,
@@ -58,6 +70,9 @@ public class BattleStateMachine : MonoBehaviour
         Items,
         Pass
     }
+
+    public TypeReaction Reaction;
+
 
     private void Awake()
     {
@@ -71,7 +86,7 @@ public class BattleStateMachine : MonoBehaviour
         MainCamera.enabled = true;
         turnState = TurnState.Start;
         Debug.Log(turnState);
-        enemyCount = UnityEngine.Random.Range(1, 5);
+        enemyCount = Random.Range(1, 5);
         StartCoroutine(SetupBattle());
         
     }
@@ -82,17 +97,15 @@ public class BattleStateMachine : MonoBehaviour
         {
             PassMembers[index] = CreatePartyMember(index);
             battleHUD[index] = CreatePartyHUDs(PassMembers[index]);
+            playerBattleStation.GetComponent<XAxisLayoutGroup3D>().UpdateLayout();
         }
 
         
         for (int i = 0; i < enemyCount; i++)
         {
             EnemyMembers.Add(CreateEnemies(i));
+            enemyBattleStation.GetComponent<XAxisLayoutGroup3D>().UpdateLayout();
         }
-
-        //GameObject enemyGo = Instantiate(enemyPrefab, enemyBattleStation);
-        //enemyInfo = enemyGo.GetComponent<UnitInfo>();
-
 
         yield return new WaitForEndOfFrame();
 
@@ -127,26 +140,38 @@ public class BattleStateMachine : MonoBehaviour
         else
         {
             turnState = TurnState.EnemyTurn;
-            StartCoroutine(EnemyTurn());
+            EnemyTurn();
         }
     }
 
     IEnumerator PlayerAttack(int damage)
     {
-        Debug.Log(turnState);
-        PartyTurn++;
+        Debug.Log("Player Attack");
         //Damage with the base attack to enemy
         playerInfo.damage = damage;
 
+        eventDisplay.Enable(playerInfo.UnitName + " Attacked " + enemyInfo.UnitName);
+
+
+        //Get the Enemy HP Bar and then Enable it
         enemyHUD = enemyInfo.transform.GetComponent<EnemyHPSlider>();
-        enemyHUD.SetSlider(enemyInfo);
-
-        bool isDead = enemyInfo.TakeDamage(playerInfo.damage);
-
-        //They updated enemy Hud here
-        enemyHUD.SetSlider(enemyInfo);
-
+        DamageDisplay = enemyInfo.transform.GetComponent<DamageDisplay>();
         yield return new WaitForSeconds(1.0f);
+        enemyHUD.EnableBar();
+
+        bool isDead = enemyInfo.TakeDamage(playerInfo.damage, ReturnReaction(BasicAttack, enemyInfo));
+        yield return new WaitForSeconds(1.0f);
+
+        //update enemy Hud here
+        DamageDisplay.EnableText();
+        DamageDisplay.DamageText(damage, ReturnReaction(BasicAttack, enemyInfo));
+        if (ReturnReaction(BasicAttack, enemyInfo) != TypeReaction.Null)
+        {
+            enemyHUD.ChangeHealth(damage / (int)Mathf.Sqrt(enemyInfo.endurance * 8 + enemyInfo.armorDefense), ReturnReaction(BasicAttack, enemyInfo));
+            yield return new WaitWhile(() => enemyHUD.isDone == false);
+        }
+        yield return new WaitForSeconds(1.0f);
+
 
         enemyHUD.DisableBar(); //to disable the bar
 
@@ -163,59 +188,100 @@ public class BattleStateMachine : MonoBehaviour
             else
             {
                 //End Turn
-                if (PartyTurn < PassMembers.Count)
-                {
-                    PlayerTurn();
-                }
-                else
-                {
-                    turnState = TurnState.EnemyTurn;
-                    StartCoroutine(EnemyTurn());
-                }
+                NextTurn();
             }
             
         }
         else
         {
             //End Turn
-            if (PartyTurn < PassMembers.Count)
-            {
-                PlayerTurn();
-            }
-            else
-            {
-                turnState = TurnState.EnemyTurn;
-                StartCoroutine(EnemyTurn());
-            }
+            NextTurn();
         }
         // Change the state based on what happened
     }
+
+    IEnumerator SkillAttack(ActionSkills skill, int damage)
+    {
+        Debug.Log("Skill Attack");
+        //Damage with the base attack to enemy
+        playerInfo.damage = DamageOnReaction(ReturnReaction(skill, enemyInfo), damage);
+
+        eventDisplay.Enable(skill.skillName);
+
+
+        //Get the Enemy HP Bar and then Enable it
+        enemyHUD = enemyInfo.transform.GetComponent<EnemyHPSlider>();
+        DamageDisplay = enemyInfo.transform.GetComponent<DamageDisplay>();
+        yield return new WaitForSeconds(1.0f);
+        enemyHUD.EnableBar();
+
+        bool isDead = enemyInfo.TakeDamage(playerInfo.damage, ReturnReaction(skill, enemyInfo));
+        yield return new WaitForSeconds(1.0f);
+
+        //update enemy Hud here
+        DamageDisplay.EnableText();
+        DamageDisplay.DamageText(damage, ReturnReaction(skill, enemyInfo));
+        if (ReturnReaction(skill, enemyInfo) != TypeReaction.Null)
+        {
+            enemyHUD.ChangeHealth(damage / (int)Mathf.Sqrt(enemyInfo.endurance * 8 + enemyInfo.armorDefense), ReturnReaction(skill, enemyInfo));
+            yield return new WaitWhile(() => enemyHUD.isDone == false);
+        }
+        yield return new WaitForSeconds(1.0f);
+        enemyHUD.DisableBar(); //to disable the bar
+
+
+        //Check if the enemy is dead
+        if (isDead)
+        {
+            deadCounter++;
+            //End the battle if all is dead
+            if (deadCounter == EnemyMembers.Count)
+            {
+                turnState = TurnState.Won;
+                EndBattle();
+            }
+            else
+            {
+                //End Turn
+                NextTurn();
+            }
+
+        }
+        else
+        {
+            //End Turn
+            NextTurn();
+        }
+        // Change the state based on what happened
+    }
+
 
     void EndBattle() //Not finished yet
     {
         if(turnState == TurnState.Won) 
         {
             //Temp
-            Debug.Log("Fight Over");
+            Debug.Log("Fight Over: Win");
+            BattleResultsScreen.SetActive(true);
         }
         else if (turnState == TurnState.Lost)
         {
             //Temp
             Debug.Log("You lost");
+            BattleResultsScreen.SetActive(true);
         }
     }
 
 
-    public int RandomPartyMember()
+    public int RandomPartyMember()//calls for random party memeber for the enemy to attack
     {
         int random;
-        random = UnityEngine.Random.Range(0, PassMembers.Count);
+        random = Random.Range(0, PassMembers.Count - 1);
         return random;
     }
 
-    public IEnumerator EnemyTurn()
+    public void EnemyTurn()
     {
-        //Attack name here
         PartyTurn = 0;
         Debug.Log(turnState);
 
@@ -224,12 +290,14 @@ public class BattleStateMachine : MonoBehaviour
             enemyInfo = EnemyMembers[EnemyTurnCount];
             if (EnemyMembers[EnemyTurnCount].currHP == 0)
             {
+                Debug.Log("Enemy: " + EnemyTurnCount + " Can't Attack!");
                 EnemyTurnCount++;
-                StartCoroutine(EnemyTurn());
+                EnemyTurn();
             }
             else
             {
                 Debug.Log("Enemy " + EnemyTurnCount + "'s Turn");
+                StartCoroutine(EnemyActionSelection());
             }
         }
         else
@@ -237,25 +305,29 @@ public class BattleStateMachine : MonoBehaviour
             turnState = TurnState.PlayerTurn;
             PlayerTurn();
         }
+    }
 
+    IEnumerator EnemyActionSelection()
+    {
 
         //determining who to hit
         int Attacked = RandomPartyMember(); // randomly selects from the members availble to hit
         playerInfo = PassMembers[Attacked]; // sets who gets hit
 
-        while (playerInfo.currHP == 0)
+        if (playerInfo.currHP == 0)
         {
-            Attacked = RandomPartyMember();
-            playerInfo = PassMembers[Attacked];
+            Debug.Log("Selected Dead Memember");
+            while (playerInfo.currHP == 0)// finds a player who's not dead already
+            {
+                Attacked = RandomPartyMember();
+                playerInfo = PassMembers[Attacked];
+            }
         }
 
 
         Debug.Log(playerInfo.name + " is Attacked!");
 
-        yield return new WaitForSeconds(1.0f);
-
-
-        int randomAction = UnityEngine.Random.Range(0, 100);
+        int randomAction = Random.Range(0, 100);
         if (randomAction >= 50)
         {
             //Normal Attack
@@ -270,46 +342,51 @@ public class BattleStateMachine : MonoBehaviour
             ActionSkills selectedSkill;
             if (enemyInfo.SkillList != null)//checks to see if enemy even has skills
             {
-                int randomSkill = UnityEngine.Random.Range(0, enemyInfo.SkillList.Count); //selects random skill
+                int randomSkill = Random.Range(0, enemyInfo.SkillList.Count); //selects random skill
                 selectedSkill = enemyInfo.SkillList[randomSkill];
                 if (SkillCostCheck(enemyInfo, selectedSkill) == true)
                 {
-                    if (selectedSkill.costType == ActionSkills.CostType.MP)
+                    switch(selectedSkill.costType)
                     {
-                        Debug.Log(selectedSkill.name + " Selected");
-                        enemyInfo.currMP = enemyInfo.currMP - selectedSkill.cost;
-                        enemyInfo.damage = (int)Mathf.Sqrt(selectedSkill.damageValue) * (int)Mathf.Sqrt(enemyInfo.magic);
-                    }
-                    else
-                    {
-                        Debug.Log(selectedSkill.name + " Selected");
-                        enemyInfo.currHP = enemyInfo.currHP - Mathf.RoundToInt((enemyInfo.baseHP * selectedSkill.cost) / 100);
-                        enemyInfo.damage = (int)Mathf.Sqrt(selectedSkill.damageValue) * (int)Mathf.Sqrt(enemyInfo.strength);
+                        case ActionSkills.CostType.MP:
+                            Debug.Log(selectedSkill.name + " Selected");
+                            enemyInfo.currMP = enemyInfo.currMP - selectedSkill.cost;
+                            enemyInfo.damage = (int)(Mathf.Sqrt(selectedSkill.damageValue) * Mathf.Sqrt(enemyInfo.magic));
+
+                            break;
+                        case ActionSkills.CostType.HP:
+                            Debug.Log(selectedSkill.name + " Selected");
+                            enemyInfo.currHP = enemyInfo.currHP - Mathf.RoundToInt((enemyInfo.baseHP * selectedSkill.cost) / 100);
+                            enemyInfo.damage = (int)(Mathf.Sqrt(selectedSkill.damageValue) * Mathf.Sqrt(enemyInfo.strength));
+
+                            break;
                     }
                 }
                 else
                 {
                     enemyInfo.damage = (int)Mathf.Sqrt(enemyInfo.strength);
+                    Debug.Log("Override to Normal Attack");
                     Debug.Log("Enemy's Damage: " + enemyInfo.damage);
                 }
             }
             else
             {
                 enemyInfo.damage = (int)Mathf.Sqrt(enemyInfo.strength);
+                Debug.Log("Override to Normal Attack");
                 Debug.Log("Enemy's Damage: " + enemyInfo.damage);
             }
 
-        }    
-        bool isDead = playerInfo.TakeDamage(enemyInfo.damage);
+        }
+        eventDisplay.Enable(enemyInfo.UnitName + " Attacks " + playerInfo.UnitName);
+        bool isDead = playerInfo.TakeDamage(enemyInfo.damage, ReturnReaction(BasicAttack, playerInfo));
 
         battleHUD[Attacked].SetHUD(playerInfo);
-        
+
 
         yield return new WaitForSeconds(1.0f);
 
         if (isDead)
         {
-            EnemyTurnCount++;
             if (PassMembers[0].currHP == 0)
             {
                 turnState = TurnState.Lost;
@@ -317,32 +394,47 @@ public class BattleStateMachine : MonoBehaviour
             }
             else
             {
-                if (EnemyTurnCount == enemyCount)
-                {
-                    turnState = TurnState.PlayerTurn;
-                    PlayerTurn();
-                }
-                else
-                {
-                    StartCoroutine(EnemyTurn());
-                }
+                NextTurn();
             }
         }
         else
         {
-            EnemyTurnCount++;
-            if (EnemyTurnCount == enemyCount)
+
+            NextTurn();
+        }
+    }
+
+
+    //Function to easily determine next turn
+    public void NextTurn()
+    {
+        if (turnState == TurnState.PlayerTurn)
+        {
+            PartyTurn++;
+            if (PartyTurn < PassMembers.Count)
             {
-                turnState = TurnState.PlayerTurn;
                 PlayerTurn();
             }
             else
             {
-                StartCoroutine(EnemyTurn());
+                turnState = TurnState.EnemyTurn;
+                EnemyTurn();
+            }
+        }
+        else if (turnState == TurnState.EnemyTurn)
+        {
+            EnemyTurnCount++;
+            if (EnemyTurnCount < EnemyMembers.Count)
+            {
+                EnemyTurn();
+            }
+            else
+            {
+                turnState = TurnState.PlayerTurn;
+                PlayerTurn();
             }
         }
     }
-
 
     //Function to pass turn to next party memeber
     public void TurnPass()
@@ -357,7 +449,7 @@ public class BattleStateMachine : MonoBehaviour
         {
             ActionPanel.SetActive(false);
             turnState = TurnState.EnemyTurn;
-            StartCoroutine(EnemyTurn());
+            EnemyTurn();
         }
     }
 
@@ -366,7 +458,7 @@ public class BattleStateMachine : MonoBehaviour
     {
         var SpawnIn = Instantiate(PartyMembers[i], playerBattleStation); ;
         var Member = SpawnIn.GetComponent<UnitInfo>();
-        Member.name = "Member " + i.ToString() + ": " + SpawnIn.name;
+        Member.name = "Member " + (i+1).ToString() + ": " + Member.UnitName;
         return Member;
     }
 
@@ -398,8 +490,9 @@ public class BattleStateMachine : MonoBehaviour
     public void OnAttackButton()
     {
         Debug.Log(turnState);
-        // to artifically change turn
+        
         int damage = (int)Mathf.Sqrt(playerInfo.weaponPower / 2) * (int)Mathf.Sqrt(playerInfo.strength);
+        // to artifically change turn
         if (turnState != TurnState.PlayerTurn)
         {
             return;
@@ -440,7 +533,7 @@ public class BattleStateMachine : MonoBehaviour
             return;
         }
 
-        StartCoroutine(PlayerAttack(damage));
+        StartCoroutine(SkillAttack(Skill,damage));
     }
     
     //checking is user can even use the skill
@@ -473,5 +566,69 @@ public class BattleStateMachine : MonoBehaviour
             return false;
         }
     }
-    
+
+
+    //making for later
+    public bool AccuracyCheck(UnitInfo user, UnitInfo target, ActionSkills skill)
+    {
+        int Accuracy = Random.Range(0, 100);
+        if (Accuracy >= target.agility)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+        
+    }
+
+    //This is how Elemental Type Reactions work
+    public TypeReaction ReturnReaction(ActionSkills skill, UnitInfo target)
+    {
+        if (target.typeWeak.HasFlag(skill.damageType))
+        {
+            Debug.Log("Weak");
+            return TypeReaction.Weak;
+        }
+        else if (target.typeResist.HasFlag(skill.damageType))
+        {
+            Debug.Log("Resist");
+            return TypeReaction.Resist;
+        }
+        else if (target.typeNull.HasFlag(skill.damageType))
+        {
+            Debug.Log("Null");
+            return TypeReaction.Null;
+        }
+        else if (target.typeDrain.HasFlag(skill.damageType))
+        {
+            Debug.Log("Drain");
+            return TypeReaction.Drain;
+        }
+        else
+        {
+            return TypeReaction.Normal;
+        }
+    }
+
+    public int DamageOnReaction(TypeReaction reaction, int damage)
+    {
+        switch (reaction)
+        {
+            default: //Normal I think
+                return damage;
+            case TypeReaction.Weak:
+                damage = damage * 2;
+                return damage;
+            case TypeReaction.Resist:
+                damage = damage / 2;
+                return damage;
+            case TypeReaction.Null:
+                damage = 0;
+                return damage;
+            case TypeReaction.Drain:
+                return damage;
+        }
+    }
 }

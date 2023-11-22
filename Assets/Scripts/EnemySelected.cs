@@ -10,16 +10,30 @@ public class EnemySelected : MonoBehaviour
     public EnemyHPSlider HPBar;
     public int thisIndex;
 
+    public BattleStateMachine BattleSystem;
+    public AudioSource SystemAudio;
+    public AudioClip Selected;
+    bool PlayedSelected;
+
+
     public void OnEnable()
     {
+        BattleSystem = GameObject.Find("Battle System").GetComponent<BattleStateMachine>();
+        SystemAudio = BattleSystem.GetComponent<AudioSource>();
         EnemySelectionObj = GameObject.Find("EnemySelectPanel");
         enemySelection = EnemySelectionObj.GetComponent<EnemySelection>();
         thisIndex = this.gameObject.transform.GetSiblingIndex();
         HPBar = GetComponent<EnemyHPSlider>();
+
+        if (enemySelection.index == thisIndex && SystemAudio.isPlaying)
+        {
+            PlayedSelected = true;
+        }
     }
 
     public void OnDisable()
     {
+        PlayedSelected = false;
         HPBar.DisableBar();
     }
 
@@ -38,10 +52,17 @@ public class EnemySelected : MonoBehaviour
     {
         if (enemySelection.index == thisIndex)
         {
-            HPBar.SetSlider(unitInfo);
+            if (!PlayedSelected)
+            {
+                PlayedSelected = true;
+                SystemAudio.PlayOneShot(Selected);
+                HPBar.EnableBar();
+            }
+            HPBar.EnableBar();
         }
         else
         {
+            PlayedSelected = false;
             HPBar.DisableBar();
         }
     }

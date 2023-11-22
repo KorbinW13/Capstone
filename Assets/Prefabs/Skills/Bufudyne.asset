@@ -15,7 +15,7 @@ MonoBehaviour:
   skillName: Bufudyne
   skillDescription: Deal heavy Ice damage to 1 foe.
   clip: {fileID: 0}
-  damageType: 2
+  damageType: 4
   damageValue: 160
   costType: 1
   cost: 12

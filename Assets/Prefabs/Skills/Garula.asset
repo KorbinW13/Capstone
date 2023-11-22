@@ -15,7 +15,7 @@ MonoBehaviour:
   skillName: Garula
   skillDescription: Deal medium Wind damage to 1 foe.
   clip: {fileID: 0}
-  damageType: 4
+  damageType: 16
   damageValue: 100
   costType: 1
   cost: 6

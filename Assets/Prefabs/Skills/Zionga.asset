@@ -15,7 +15,7 @@ MonoBehaviour:
   skillName: Zionga
   skillDescription: Deal medium Electric damage to 1 foe.
   clip: {fileID: 0}
-  damageType: 3
+  damageType: 8
   damageValue: 100
   costType: 1
   cost: 8

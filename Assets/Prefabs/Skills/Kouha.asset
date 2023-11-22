@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skillName: Kouha
   skillDescription: Deal light Light damage to 1 foe.
-  damageType: 6
+  clip: {fileID: 0}
+  damageType: 64
   damageValue: 50
   costType: 1
   cost: 4
